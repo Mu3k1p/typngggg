@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to TypeNot</title>
+    <link rel="icon" type="image/x-icon" href="/images/typenoticon.png">
+    <!-- React Libraries -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel (to translate JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- All styles are now in this single block for clarity -->
+    <style>
+        /* Ensures the page and body fill the screen */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            cursor: pointer; /* Changes the cursor to a pointer to indicate it's clickable */
+            overflow: hidden; /* Prevents scrollbars */
+        }
+
+        body {
+            /* Font and Color */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: white;
+
+            /*background gradient */
+            background: #ffffff;
+            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(73, 130, 143, 1) 63%, rgba(0, 0, 0, 1) 100%);
+        }
+
+        /* This is the key fix for centering */
+        #root {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .rotating-text-container {
+            font-size: 3rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .rotating-text-item {
+            display: inline-block;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            color: #61dafb;
+        }
+
+        /* Added a style for the "click to continue" text */
+        .continue-prompt {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            animation: fadeIn 2s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- React will render your app into this single div -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- Code for the RotatingText component ---
+        const RotatingText = ({ texts, rotationInterval }) => {
+            const [currentIndex, setCurrentIndex] = React.useState(0);
+
+            React.useEffect(() => {
+                const interval = setInterval(() => {
+                    setCurrentIndex(prevIndex => (prevIndex + 1) % texts.length);
+                }, rotationInterval);
+
+                return () => clearInterval(interval);
+            }, [texts, rotationInterval]);
+
+            return (
+                <div className="rotating-text-container">
+                    <span className="rotating-text-item">
+                        {texts[currentIndex]}
+                    </span>
+                </div>
+            );
+        };
+
+        // --- Code for main App component ---
+        const MyApp = () => {
+            return (
+                <div>
+                    <h1>TypeNot</h1>
+                    <RotatingText
+                        texts={['Learn To Type', 'With Songs', 'With Fun!']}
+                        rotationInterval={2000}
+                    />
+                    <div className="continue-prompt">
+                        Click anywhere to continue
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Render the React App ---
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<MyApp />);
+
+        document.addEventListener('click', () => {
+            window.location.href = 'choice';
+        });
+    </script>
+
+</body>
+</html>

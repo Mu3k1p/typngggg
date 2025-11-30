@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeNote - The Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            overflow: hidden;
+            padding: 0 2rem;
+        }
+
+        header {
+            background: #fff;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+        }
+
+        .nav-links li {
+            padding: 0 1rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+         .game-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .lyrics-section, .typing-section {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: #007BFF;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+        #lyric-container {
+            height: 400px;
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+        #inputBox {
+            width: 100%;
+            height: 400px;
+            padding: 1rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: none;
+        }
+        #wpm-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        #wrong-image-container img {
+             max-width: 100%;
+             margin-top: 1rem;
+             border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">TypeNote</div>
+                <ul class="nav-links">
+                     <li><a href="song_settings.html">Libary</a></li>
+                     <li><a href="#">About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="game-container">
+            <div class="lyrics-section">
+                <h2>Lyrics</h2>
+                <div id="lyric-container">
+                    </div>
+            </div>
+            <div class="typing-section">
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Type Here</h2>
+                    <div id="wpm-display">WPM: <span id="wpm-value">0</span></div>
+                </div>
+                <textarea id="inputBox" placeholder="The lyrics will appear soon... get ready to type!"></textarea>
+                 <div id="wrong-image-container"></div>
+            </div>
+        </div>
+    </main>
+
+    <audio id="songAudio"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const speed = parseFloat(urlParams.get('speed')) || 1;
+            const volume = parseFloat(urlParams.get('volume')) || 0.5;
+
+            // ---- GAME DATA ----
+            // In a real application, you would fetch this data
+             const MOCK_AUDIO_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; // Placeholder
+            const MOCK_LYRICS = [
+                "The music starts now, get ready to type,", 5,
+                "Match the words as they appear on the screen,", 4,
+                "Don't fall behind, keep up the hype.", 5,
+                "Show everyone you're a typing queen (or king).", 4,
+                "The faster you go, the higher your score,", 5,
+                "Don't let the errors bring you down.", 4,
+                "You're almost there, just a little bit more,", 5,
+                "You're about to claim the typing crown!", 0
+            ];
+            // -------------------
+
+            const start = new Date().getTime();
+            const lyrics = MOCK_LYRICS;
+            let lyrics_line = 0;
+            let total_lyrics_done = "";
+            let correct = true;
+            let errors = 0;
+
+            const audio = document.getElementById('songAudio');
+            const inputBox = document.getElementById('inputBox');
+            const lyricContainer = document.getElementById('lyric-container');
+            const wpmValue = document.getElementById('wpm-value');
+            const wrongImageContainer = document.getElementById('wrong-image-container');
+
+            function setupGame() {
+                // Set up audio
+                audio.src = MOCK_AUDIO_URL;
+                audio.playbackRate = speed;
+                audio.volume = volume;
+
+                // Start the audio and lyrics display after a short delay
+                setTimeout(() => {
+                    audio.play();
+                    createlyrics();
+                    updateWPM();
+                }, 2000); // 2-second delay
+            }
+
+            inputBox.addEventListener('input', () => {
+                const typedText = inputBox.value;
+                const expectedText = total_lyrics_done.slice(0, typedText.length);
+
+                if (typedText !== expectedText) {
+                    if (correct) {
+                        errors++;
+                        correct = false;
+                        displayIncorrectTyping(true);
+                        inputBox.style.color = 'red';
+                    }
+                } else {
+                    if (!correct) {
+                        correct = true;
+                        displayIncorrectTyping(false);
+                        inputBox.style.color = 'black';
+                    }
+                }
+            });
+
+            function displayIncorrectTyping(show) {
+                wrongImageContainer.innerHTML = ''; // Clear previous image
+                if (show) {
+                    const img = document.createElement('img');
+                    // Replace with your actual image path
+                    img.src = 'https://via.placeholder.com/400x100.png?text=WRONG+WORD!';
+                    wrongImageContainer.appendChild(img);
+                }
+            }
+
+            function createlyrics() {
+                if (lyrics_line >= lyrics.length) {
+                    const wpm_final = calculateWPM();
+                    audio.pause();
+                    alert(`Finished! Your final WPM is ${wpm_final} with ${errors} errors.`);
+                    // Optionally, redirect to a results page
+                    // window.location.href = `/results?wpm=${wpm_final}&errors=${errors}`;
+                    return;
+                }
+
+                const line = lyrics[lyrics_line];
+                const timeToWait = lyrics[lyrics_line + 1];
+
+                const p = document.createElement('p');
+                p.textContent = line;
+                lyricContainer.appendChild(p);
+                lyricContainer.scrollTop = lyricContainer.scrollHeight; // Auto-scroll
+
+                total_lyrics_done += (line + " "); // Add space between lines
+                lyrics_line += 2;
+
+                if (timeToWait > 0) {
+                    setTimeout(createlyrics, timeToWait * 1000 / speed);
+                }
+            }
+             function calculateWPM() {
+                const now = new Date().getTime();
+                const timeElapsedMinutes = (now - start) / 60000;
+                const wordsTyped = inputBox.value.trim().split(/\s+/).length;
+                return Math.round(wordsTyped / timeElapsedMinutes) || 0;
+            }
+
+            function updateWPM() {
+                wpmValue.textContent = calculateWPM();
+                setTimeout(updateWPM, 2000); // Update WPM every 2 seconds
+            }
+
+            setupGame();
+        });
+    </script>
+
+</body>
+</html>

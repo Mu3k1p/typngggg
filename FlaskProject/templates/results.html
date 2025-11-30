@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results Page</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for a modern look */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Gradient background for the body */
+            background: linear-gradient(to bottom right, #0A0A0A, #1A202C, #000033); /* Dark shades for gradient */
+            background-attachment: fixed; /* Ensures gradient covers full height even with short content */
+        }
+        /* Ensure the body takes full height for proper centering */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="text-gray-100 flex items-center justify-center min-h-screen p-4">
+    <!-- Main container for the results card - now black -->
+    <div class="bg-black p-8 rounded-xl shadow-2xl max-w-md w-full text-center border border-cyan-700">
+        <!-- Song Title Section -->
+        <h1 class="text-3xl md:text-4xl font-extrabold text-cyan-400 mb-6 tracking-wide">
+            <!-- Placeholder for the Song Title -->
+            <span id="songTitle">"Bohemian Rhapsody"</span>
+        </h1>
+
+        <!-- Results Header -->
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-50 mb-8">Your Typing Results</h2>
+
+        <!-- Words Per Minute (WPM) Display -->
+        <div class="mb-6 bg-gray-900 p-4 rounded-lg shadow-inner flex justify-between items-center">
+            <p class="text-lg md:text-xl font-semibold text-gray-200">Words per minute:</p>
+            <!-- Placeholder for WPM value -->
+            <p id="wpmValue" class="text-2xl md:text-3xl font-bold text-cyan-300">75</p>
+        </div>
+
+        <!-- Errors Display -->
+        <div class="mb-8 bg-gray-900 p-4 rounded-lg shadow-inner flex justify-between items-center">
+            <p class="text-lg md:text-xl font-semibold text-gray-200">Errors:</p>
+            <!-- Placeholder for Error count -->
+            <p id="errorValue" class="text-2xl md:text-3xl font-bold text-red-400">3</p>
+        </div>
+
+        <!-- Action Buttons/Links Container -->
+        <div class="flex flex-col space-y-4">
+            <!-- Try Again Link -->
+            <a href="/choice" class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">
+                Try again?
+            </a>
+
+            <!-- Copy Results Button -->
+            <button id="copyResultsBtn" class="bg-gray-700 hover:bg-gray-600 text-gray-200 font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">
+                Copy Results
+            </button>
+
+            <!-- Message box for copy confirmation -->
+            <div id="messageBox" class="hidden mt-4 p-3 bg-green-600 text-white rounded-lg text-sm transition-opacity duration-300 opacity-0">
+                Results copied to clipboard!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for interactivity
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to the elements
+            const songTitleElement = document.getElementById('songTitle');
+            const wpmValueElement = document.getElementById('wpmValue');
+            const errorValueElement = document.getElementById('errorValue');
+            const copyResultsBtn = document.getElementById('copyResultsBtn');
+            const messageBox = document.getElementById('messageBox');
+
+            // --- Replace Placeholders with Sample Data (In a real app, these would come from the server) ---
+            // For demonstration, we'll use hardcoded values.
+            // In a real application, you would dynamically insert values from your backend
+            // For example, if you're using Flask, you might do:
+            // songTitleElement.textContent = "{{ SONG }}";
+            // wpmValueElement.textContent = "{{ WPM }}";
+            // errorValueElement.textContent = "{{ ERROR }}";
+
+            // Example of how you might update content if data was passed via JS
+            // (e.g., from a JSON object or data attributes)
+            const sampleSong = {{ SONG }};
+            const sampleWPM = {{ WPM }};
+            const sampleErrors = {{ ERROR }};
+
+            songTitleElement.textContent = `"${sampleSong}"`;
+            wpmValueElement.textContent = sampleWPM;
+            errorValueElement.textContent = sampleErrors;
+
+
+            // --- Copy Results Functionality ---
+            copyResultsBtn.addEventListener('click', () => {
+                const song = songTitleElement.textContent.replace(/"/g, ''); // Remove quotes for copying
+                const wpm = wpmValueElement.textContent;
+                const errors = errorValueElement.textContent;
+
+                const resultsText = `Song: ${song}\nWords per minute: ${wpm}\nErrors: ${errors}`;
+
+                // Use document.execCommand('copy') for clipboard functionality
+                // as navigator.clipboard.writeText() might be restricted in iframes.
+                const textarea = document.createElement('textarea');
+                textarea.value = resultsText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    // Show confirmation message
+                    messageBox.textContent = 'Results copied to clipboard!';
+                    messageBox.classList.remove('hidden');
+                    messageBox.classList.add('opacity-100');
+                    // Hide message after a few seconds
+                    setTimeout(() => {
+                        messageBox.classList.remove('opacity-100');
+                        messageBox.classList.add('opacity-0');
+                        setTimeout(() => {
+                            messageBox.classList.add('hidden');
+                        }, 300); // Wait for fade out transition
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    messageBox.textContent = 'Failed to copy results.';
+                    messageBox.classList.remove('hidden');
+                    messageBox.classList.add('opacity-100', 'bg-red-600'); // Change color for error
+                    setTimeout(() => {
+                        messageBox.classList.remove('opacity-100');
+                        messageBox.classList.add('opacity-0');
+                        setTimeout(() => {
+                            messageBox.classList.add('hidden', 'bg-red-600');
+                        }, 300);
+                    }, 2000);
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

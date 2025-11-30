@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        #error_part_1, #error_part_3 {
+            background-color: #0084ff;
+            color: white;
+            display: inline;
+          }
+
+          #error_part_2 {
+            background-color: red;
+            color: white;
+            font-weight: bold;
+            display: inline;
+          }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            overflow: hidden;
+            padding: 0 2rem;
+        }
+
+        /* Navigation Bar */
+        header {
+            background: #fff;
+            color: #333;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+        }
+
+        .nav-links li {
+            padding: 0 1rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links .active {
+            color: #007BFF;
+        }
+
+        #typing-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            #typing-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+    </style>
+</head>
+<body id="body">
+
+     <header>
+        <div class="container">
+            <nav>
+                <div class="logo">TypeNot</div>
+                <ul class="nav-links">
+                    <li><a href="About">About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="intro-section" class="text-center" style="padding: 2rem 0;">
+            <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem;">Welcome to TypeNote</h1>
+            <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem;">Click the button below to start the typing test.</p>
+            <div>
+                <input type="text" placeholder="Insert typing speed (e.g., 1 or 1.5)" id="game_speed" style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;"/>
+                <p>Insert typing speed (e.g. 1 = normal or 2 = double speed)</p>
+                <button onclick="createtyping(this)" style="background-color: #007BFF; color: white; font-weight: bold; padding: 0.6rem 1.5rem; border-radius: 8px; border: none; cursor: pointer;">Start Typing</button>
+                <input type="checkbox" id="vehicle1" name="symbols" value="True">
+                <label for="vehicle1">Remove symbols?</label>
+            </div>
+            <div style="margin-top: 1.5rem;">
+              <label for="volume">Volume: </label>
+              <input type="range" id="volume" name="volume" min="0" max="1" step="0.1" value="0.5" />
+            </div>
+        </div>
+
+        <div id="error_line">
+  <span id="error_part_1"></span>
+  <span id="error_part_2" style="font-weight: bold;"></span>
+  <span id="error_part_3"></span>
+</div>
+
+
+        <div id="typing-container" class="hidden">
+            <div>
+                <h2 style="font-size: 1.5rem; font-weight: bold;">Lyrics</h2>
+                <div style="height: 400px; padding: 1rem; background-color: white; border: 1px solid #ddd; border-radius: 8px; overflow-y: auto;">
+                    <table style="width: 100%;">
+                        <tbody id="lyric-container">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="typing-area">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <h2 style="font-size: 1.5rem; font-weight: bold;">Type Here</h2>
+                    <h3 id="wpm-display">WPM: <span id="WPMWOW">0</span></h3>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <audio id="test" src="{{ url_for('static', filename=AUDIO_AS_CHOSEN) }}"></audio>
+
+    <script>
+        const start = new Date().getTime();
+        let lyrics = {{ LYRICS | safe }}; // This will be populated by your backend
+        let lyrics_line = 0;
+        let time_to_wait = 0;
+        let total_lyrics_done = "";
+        let correct = true;
+        let speed = 1;
+        let errors = 0;
+        let wpm_final = 0;
+        let error_end = "Finished with no errors";
+        let temp_lyrics_temp = [];
+        let wordCount = "";
+
+        function looksymbols() {
+            symbols_checked = document.getElementById("vehicle1");
+            if (symbols_checked.checked) {
+                for(let i = 0; i < lyrics.length; i += 2){
+                    temp_lyrics_temp.push(lyrics[i].replace(/["'(){}.,]/g, '')) // This line is basicly carrying the entire remove symbols function
+                    temp_lyrics_temp.push(lyrics[i + 1])
+                    //console.log(lyrics[i]);
+                    //console.log("cut version: ", lyrics[i].replace(/["'(){}.]/g, ''))
+                }
+                //console.log(temp_lyrics_temp);
+                lyrics = temp_lyrics_temp;
+            }
+        }
+
+        function playAudio() {
+            const audio = document.getElementById('test');
+            speed = parseFloat(document.getElementById("game_speed").value) || 1;
+            audio.playbackRate = speed;
+            audio.volume = parseFloat(document.getElementById("volume").value) || 0.5;
+            audio.play().catch(e => console.error("Audio playback failed:", e));
+        }
+
+        function tell_them_their_wrong() {
+
+        }
+
+        function createtyping(button) {
+            document.getElementById('intro-section').style.display = 'none';
+            document.getElementById('typing-container').classList.remove('hidden');
+
+            looksymbols()
+
+            const textspace = document.createElement('textarea');
+            textspace.id = "inputBox";
+            textspace.placeholder = "Start typing here!";
+            textspace.style.width = "100%";
+            textspace.style.height = "400px";
+            textspace.style.padding = "1rem";
+            textspace.style.fontSize = "1rem";
+
+            document.getElementById('typing-area').appendChild(textspace);
+
+            playAudio();
+
+            textspace.addEventListener('input', function () {
+                if (textspace.value.toLowerCase() !== total_lyrics_done.toLowerCase().slice(0, textspace.value.length)) {
+                    //console.log(total_lyrics_done)
+                    if (correct) {
+                        correct = false;
+                        errors += 1;
+                    }
+                } else {
+                    if (correct == false) {
+                        correct = true;
+                    }
+                }
+            });
+
+            function display_incorrect_typing(show) {
+                const existingImage = document.getElementById('image_to_delete');
+                if (existingImage) {
+                    existingImage.remove();
+                }
+
+                if (show) {
+                    const img = document.createElement('img');
+                    img.src = '/static/images/wrong.jpg'; // This path should be valid in your project
+                    img.id = 'image_to_delete';
+                    img.style.marginTop = '1rem';
+                    document.getElementById('typing-area').appendChild(img);
+                }
+            }
+
+            function createlyrics() {
+                if (lyrics[lyrics_line] == undefined) {
+                    if (correct == false){
+                        error_end = "Finished with errors"
+                    }
+                    else{
+                        error_end = "Finished with no errors"
+                    }
+                    const url = `/results?var1=${encodeURIComponent(errors)}&var2=${encodeURIComponent(wpm_final)}&var3=${encodeURIComponent(error_end)}`;
+                    window.location.href = url;
+                    return;
+                }
+
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+
+                cell.textContent = lyrics[lyrics_line];
+                row.appendChild(cell);
+                document.getElementById('lyric-container').appendChild(row);
+
+                total_lyrics_done += lyrics[lyrics_line] + "";
+                lyrics_line += 1;
+                time_to_wait = Number(lyrics[lyrics_line]);
+                lyrics_line += 1;
+
+                if (time_to_wait > 0) {
+                     setTimeout(createlyrics, (time_to_wait * 1000) / speed);
+                } else if (lyrics.length > lyrics_line) {
+                    // If time is 0 but there are more lyrics, call it immediately
+                    createlyrics();
+                }
+            }
+
+            function updateWPM() {
+                const now = new Date().getTime();
+                const timeElapsedMinutes = (now - start) / 60000;
+                const inputText = document.getElementById('inputBox').value;
+
+                let temp_true_false = false;
+                let count = 0;
+                let comparison = total_lyrics_done.toLowerCase().slice(0, inputText.length)
+                let temp_words_complete = "";
+                let count2 = 0;
+                let count3 = 0;
+
+                //console.log("comp: ", comparison)
+
+                //for (i = 0; i < comparison.length; i++){
+                //    if (temp_true_false){
+                //       //("running: ", comparison[i])
+                //    }
+                //}
+
+                temp_true_false = true
+
+                // script for finding where the user has inputted a wrong letter, unoptimised as hell but should be fine for this project
+                while (temp_true_false == true){
+                    if (comparison.toLowerCase()[count] == textspace.value.toLowerCase()[count]){ // || means OR in the stupid language for some reason
+                        if (count >= textspace.value.length || count >= comparison.length){
+                            //console.log(temp_words_complete);
+                            temp_true_false = false;
+                        }
+                        temp_words_complete += comparison.toLowerCase()[count];
+                        count++;
+                    }
+                    else{
+                        //console.log(temp_words_complete);
+                        temp_true_false = false;
+                        // comparison is an array and I want to know what row 'count' is on when this part runs
+                    }
+                }
+
+                //script to find newline. IT WORKS HAHAHAHHAHA YESSSSSSSSSSSSSSSSSSSSS
+                if (correct == false) {
+                    temp_true_false = true;
+                }
+                count2 = 0;
+                count3 = 0
+                while (temp_true_false == true){
+                    if (temp_words_complete[count - count2] == "\n" || count - count2 <= 0){
+                        //console.log("count2 = ", count2)
+                        //console.log("Words up until failure: ",temp_words_complete.slice(count - count2,count))
+                        //console.log(textspace.value.slice(count,count + 1))
+                        while (temp_true_false == true){
+                            if (total_lyrics_done[count + count3] == "\n" || total_lyrics_done[count + count3] == undefined){
+                                temp_true_false = false;
+                                count3--;
+                            }
+                            count3++;
+                        }
+                        count2 -= 1;
+                    }
+                    count2++;
+                }
+
+                // Improved correction system: actually showing it on the page
+                if (correct == false){
+                    document.getElementById('error_part_1').textContent = temp_words_complete.slice(count + 1 - count2,count);
+                    if (textspace.value.slice(count, count + 1) != " "){
+                        document.getElementById('error_part_2').textContent = textspace.value.slice(count,count + 1);
+                    }
+                    else{
+                        document.getElementById('error_part_2').textContent = "SPACE";
+                    }
+                    document.getElementById('error_part_3').textContent = total_lyrics_done.slice(count + 1, count + count3);
+                    console.log("count3 = ",count3)
+                    console.log(total_lyrics_done.slice(count + 1, count + count3))
+                }
+                else{
+                    document.getElementById('error_part_1').textContent = "";
+                    document.getElementById('error_part_2').textContent = "";
+                    document.getElementById('error_part_3').textContent = "";
+                }
+
+
+                // Script for making the wordcount based on the correct text no just any text
+                //console.log("wrong letter = ", inputText.slice(temp_words_complete.length, temp_words_complete.length + 1));
+                wordCount = temp_words_complete.trim().split(/\s+/).filter(w => w).length
+
+                if (timeElapsedMinutes > 0) {
+                    wpm_final = Math.floor(wordCount / timeElapsedMinutes);
+                } else {
+                    wpm_final = 0;
+                }
+
+                document.getElementById('WPMWOW').innerText = wpm_final;
+                setTimeout(updateWPM, 2000);
+            }
+
+            updateWPM();
+            createlyrics();
+        }
+    </script>
+</body>
+</html>

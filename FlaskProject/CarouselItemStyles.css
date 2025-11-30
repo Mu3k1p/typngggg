@@ -1,0 +1,9 @@
+.carousel-item {
+    /* Add to existing carousel-item styles */
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out, opacity 0.5s ease-in-out;
+}
+
+.carousel-item:hover {
+    transform: scale(1.02); /* Subtle scale effect on hover */
+}

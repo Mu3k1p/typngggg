@@ -1,0 +1,28 @@
+/* Responsive widths for carousel items */
+@media (max-width: 767px) {
+    .carousel-item {
+        width: 100%;
+        /* For very small screens, 100% is fine, but you might want to cap the card's width */
+    }
+}
+@media (min-width: 768px) { /* Combine medium and large into one if you want 600px wide cards consistently */
+    .carousel-item {
+        width: 600px; /* Set a fixed width for the item */
+        max-width: 100%; /* Ensure it doesn't overflow on smaller screens */
+        margin-left: auto; /* Center the card if it's less than 100% width */
+        margin-right: auto; /* Center the card if it's less than 100% width */
+    }
+    .song-card { /* You might need to apply max-width here too */
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* Adjust the carousel-container if necessary to give more space, e.g., for wider cards */
+.carousel-container {
+    /* max-width: 960px; <-- You might need to increase this if 600px cards feel cramped */
+    max-width: 1200px; /* Example: Increased max-width for container */
+    margin: 0 auto;
+    overflow: hidden;
+}

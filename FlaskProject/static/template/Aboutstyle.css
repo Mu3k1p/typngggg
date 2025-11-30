@@ -1,0 +1,141 @@
+.box {
+  width: 1912px;
+  height: 3703px;
+}
+
+.box .group {
+  position: fixed;
+  width: 1918px;
+  height: 3703px;
+  top: 0;
+  left: 0;
+}
+
+.box .overlap {
+  position: relative;
+  height: 3703px;
+}
+
+.box .overlap-group-wrapper {
+  position: absolute;
+  width: 1918px;
+  height: 3703px;
+  top: 0;
+  left: 0;
+}
+
+.box .overlap-group {
+  width: 1912px;
+  position: relative;
+  height: 3703px;
+}
+
+.box .rectangle-wrapper {
+  position: absolute;
+  width: 1912px;
+  background-color: #ffffff;
+  height: 3703px;
+  top: 0;
+  left: 0;
+}
+
+.box .rectangle {
+  position: relative;
+  width: 1577px;
+  height: 2990px;
+  top: 418px;
+  left: 153px;
+  background-color: #69b8b7;
+  box-shadow: 0px 4px 4px #00000040;
+}
+
+.box .img {
+  position: absolute;
+  width: 1912px;
+  height: 386px;
+  top: 1px;
+  left: 0;
+}
+
+.box .text-wrapper {
+  position: absolute;
+  width: 758px;
+  top: 37px;
+  left: 549px;
+  text-shadow: 0px 4px 4px 1px #00000040;
+  -webkit-text-stroke: 1px #000000;
+  font-family: "Kadwa-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 128px;
+  text-align: center;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.box .div {
+  position: absolute;
+  width: 203px;
+  top: 11px;
+  left: 1660px;
+  font-family: "Kadwa-Regular", Helvetica;
+  font-weight: 400;
+  color: #000000;
+  font-size: 50px;
+  text-align: center;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.box .text-wrapper-2 {
+  position: absolute;
+  width: 363px;
+  top: 1px;
+  left: 0;
+  font-family: "Kadwa-Regular", Helvetica;
+  font-weight: 400;
+  color: #000000;
+  font-size: 50px;
+  text-align: center;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.box .about-typenot {
+  position: absolute;
+  width: 902px;
+  top: 444px;
+  left: 196px;
+  font-family: "Kadwa-Regular", Helvetica;
+  font-weight: 400;
+  color: #000000;
+  font-size: 36px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.box .why-typenot-let-s-be {
+  position: absolute;
+  width: 1491px;
+  top: 1282px;
+  left: 201px;
+  font-family: "Kadwa-Regular", Helvetica;
+  font-weight: 400;
+  color: #000000;
+  font-size: 36px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.box .what-makes-us {
+  position: absolute;
+  width: 1469px;
+  top: 1735px;
+  left: 194px;
+  font-family: "Kadwa-Regular", Helvetica;
+  font-weight: 400;
+  color: #000000;
+  font-size: 36px;
+  letter-spacing: 0;
+  line-height: normal;
+}
